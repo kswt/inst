@@ -2,7 +2,7 @@
 
 .model small
 .data
-	a dw 0fbffh; from b(11) to d(13)
+	a dw 0fffbh; from b(11) to d(13)
 	from equ 0B0h
 	to equ 0D0h
 	res dw ?
@@ -13,7 +13,7 @@
 
 	mov ax, a
 check:
-	mov cx, 12
+	mov cx, 13
 	xor dl, dl
 
 process:
@@ -34,7 +34,7 @@ next:
 	rol ax, 1
 	
 	loop process
-	rol ax, 4
+	rol ax, 3
 	cmp dl, 1; Check CHANGED flag
 	je check
      
