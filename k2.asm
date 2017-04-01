@@ -3,8 +3,8 @@
 .model small
 .data
 	a dw 0b55bh; from b(11) to d(13)
-	from equ 050h
-	to equ 020h
+	from equ 10
+	to equ 4
 	res dw ?
 .code
 .386
