@@ -26,11 +26,11 @@ check:
 
 
 m: 
-	mov bh,ah
-	and bh, 0F8h
-	or bh,from
+	mov bl,al
+	and bl, 0F8h
+	or bl,from
 
-	cmp ah,bh
+	cmp al,bl
 	jne m1
 	je m0
 m0:	inc kol
@@ -42,9 +42,10 @@ m1:
 	mov dx, k1
 	jnc m2
 	jc m7
-	m7: add sum, dx
+m7:
+	add sum, dx
 		
-	m2: 
+m2: 
 	ror ax,1
 	inc k1
 	
