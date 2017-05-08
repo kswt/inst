@@ -1,14 +1,15 @@
 #!/bin/bash
 read -p "Please, enter the number: " n
 
-users_list=$(users | tr ' ' '\n' | sort | uniq)
+users_list=$(users | tr ' ' '\n' | uniq)
 for un in $users_list; do
 	let average_process+=$(ps -u "$un" | wc -l)
 	let nusers++
 done
 let average_process/=nusers
 
-for un in $users_list; do
+for un in $users_list;
+do
     usrn=$(ps -u "$un" | wc -l)
     echo "Average number of processes per user is $average_process" | write "$un"
     if [ $(expr $average_process - $usrn) -gt $n ];
