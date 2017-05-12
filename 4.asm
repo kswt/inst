@@ -27,10 +27,10 @@ MainLoop:
 	lodsb 
 	;cmp space, 1
 	cmp al, ' '
-;	jne dotsCheck
+	jne dotsCheck
 
 
-jne endLoop
+;jne endLoop
 Space:
 	stosb
 SpaceLoop:
@@ -46,7 +46,7 @@ SpaceLoop:
 	
 
 
-jmp endLoop
+;jmp endLoop
 
 
 
@@ -67,15 +67,22 @@ dotsLoop:
 ;	jne endLoop
 
 endDots:
+
 	cmp dot, 1
-	je addStar
-	mov al, '-'
-	stosb
-	lodsb
-	jmp endLoop
-addStar:
+	je addDash
 	mov al, '*'
+;	stosb
+;	lodsb
+	;jmp endLoop
+	jmp dotsEnd
+addDash:
+	mov al, '-'
 ;	dec si		
+dotsEnd:
+	stosb
+	dec si
+	lodsb
+
 endLoop:
 	stosb
 	loop MainLoop
