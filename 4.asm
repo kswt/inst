@@ -5,6 +5,7 @@
 .data
 	hlp1	db 13,10,'Enter a string:',13,10,'$'
 	hlp2 	db 13,10,'$'
+public	hlp3
 	hlp3	db 'Enter the filename',13,10,'$'
 
 	dop2 	db '-: '
@@ -14,10 +15,8 @@
 		db 'Removed spaces: '
 	spaces db 0,'$'
 
-;	stars db 0
-;	dashes db 0
-;	spaces db 0
 
+public	err1
 	err1 	db 'Cannot open this file',13,10,'$'
 
 	menu db 13, 10, 'Select your variant:',13,10
@@ -31,16 +30,17 @@
 		db '0. Exit the program',13,10,'$' 
 
 	a db 200,'$','$',200 dup(?)
-;	a db 'This is a    string with many ..... space bars and dots. $'
 	len equ $-a
 	b db '$',0, '$', len dup(?)
-	inp db 2,0, 12 dup(?)
+public inp
+	inp db 80,0, 80 dup(?)
 	
 ;	space db 0
 	dot db 0
 .code
 .486
 	EXTRN Print:near
+	EXTRN OpenFile:near
 	mov ax, @data
 	mov ds, ax
 	mov es, ax
@@ -54,6 +54,8 @@ MenuLoop:
 	mov bx, 0
 	mov cx, 1
 	int 21h
+	push offset hlp2
+	call Print
 	cmp inp, '1'
 	je Input
 	cmp inp, '2'
@@ -80,7 +82,9 @@ jmp MenuLoop
 FileDop2:
 	mov al, 2
 	call OpenFile
-	
+	jc MenuLoop	
+	mov bx, ax
+	mov cx, offset spaces - offset dop2 +2
 	mov dx, offset dop2
 	
 	mov ah, 40h
@@ -94,52 +98,37 @@ jmp MenuLoop
 Input:
 	push offset hlp1
 	call Print
-	xor ch, ch
+	xor cx, cx
+	mov di, offset a+2
 InpLine:
-	add a[1], ch
+	mov si, offset inp+2
+	add a[1], cl
+	mov dx, offset inp
 	mov ah, 0Ah
 	int 21h	
 	push offset hlp2
 	call Print
-	mov ch, a[1]
-	cmp ch, 0
-	jnz InpLine
+	
+	cmp inp[1], 0
+	je endInpLine
 
-	mov di, offset a+2
-	mov al, a[1]
-	cbw
-	add di, ax
+	mov cl, inp[1]
+	inc cl
+	rep movsb
+	mov al, 10
+	stosb
+	jmp InpLine
+;	mov di, offset a+2
+;	mov al, a[1]
+;	cbw
+;	add di, ax
 	
 	;cbw
-	
+endInpLine:	
 	mov al, '$'
 	stosb
 jmp MenuLoop;
 	
-	
-proc OpenFile near
-	push offset hlp3
-	call Print	
-	mov inp, 13
-	mov dx, offset inp
-	mov ah, 0Ah
-	int 21h
-
-	mov al, inp[1]
-	cbw
-	mov di, ax
-	mov inp[di+2], 0
-	
-	mov dx, offset inp+2
-	mov ah, 3dh
-	int 21h
-	jc fileErr
-	ret
-fileErr:
-	push offset err1
-	call Print
-ret
-endp
 	
 FromFile:
 	mov al, 0
@@ -305,7 +294,7 @@ endLoop:
 	loop MainLoop
 	mov al, '$'
 	stosb
-	sub di, offset b+3
+	sub di, (offset b+3)
 	mov ax, di
 	mov b[1], al
 	
