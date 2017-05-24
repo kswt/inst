@@ -8,12 +8,13 @@
 public	hlp3
 	hlp3	db 'Enter the filename',13,10,'$'
 
-	dop2 	db '-: '
-	dashes 	db 0,13,10 
-		db '*: '
-	stars 	db 0,13,10
+	dop2 	db ' -: '
+	dashes 	dw 3030h
+		db 13,10, ' *: '
+	stars 	dw 3030h,13,10
 		db 'Removed spaces: '
-	spaces db 0,'$'
+	spaces dw 3030h
+		db '$'
 
 
 public	err1
@@ -33,7 +34,7 @@ public	err1
 	len equ $-a
 	b db '$',0, '$', len dup(?)
 public inp
-	inp db 80,0, 80 dup(?)
+	inp db 200,0, 200 dup(?)
 	
 ;	space db 0
 	dot db 0
@@ -44,11 +45,25 @@ public inp
 	mov ax, @data
 	mov ds, ax
 	mov es, ax
+
+	inc_bcd macro var
+	xchg ax, var
+	inc al
+	aaa
+	xchg ax, var
+	endm
+
+	bswap_w macro var
+	xchg ax, var
+	xchg al, ah
+	xchg ax, var
+	endm
+
 MenuLoop:
 	push offset menu
 	call Print
 ;	mov inp, 2
-	mov dx, offset inp
+	mov dx, offset inp+2
 ;	mov ah, 0Ah
 	mov ah, 3fh
 	mov bx, 0
@@ -56,21 +71,21 @@ MenuLoop:
 	int 21h
 	push offset hlp2
 	call Print
-	cmp inp, '1'
+	cmp inp+2, '1'
 	je Input
-	cmp inp, '2'
+	cmp inp+2, '2'
 	je FromFile
-	cmp inp, '3'
+	cmp inp+2, '3'
 	je Process
-	cmp inp, '4'
+	cmp inp+2, '4'
 	je DisplayOutput
-	cmp inp, '5'
+	cmp inp+2, '5'
 	je FileOut
-	cmp inp, '6'
+	cmp inp+2, '6'
 	je DisplayDop2
-	cmp inp, '7'
+	cmp inp+2, '7'
 	je FileDop2	
-	cmp inp, '0'
+	cmp inp+2, '0'
 	je EndProg
 jmp MenuLoop;
 
@@ -228,67 +243,49 @@ MainLoop:
 Space:
 	stosb
 SpaceLoop:
+	inc_bcd spaces
+;	inc byte ptr spaces+1
 	lodsb
 	dec cx
 	cmp al, ' '
-	inc spaces
 	je SpaceLoop
 ;	je endLoop	
 ;	mov space, 1
 ;	cmp a[si+1], ' '
 ;	jne endLoop
 ;	loop MainLoop
-	
+	;dec spaces
+	xchg ax, spaces
+	dec al
+	aas
+	xchg spaces, ax	
 
 
 ;jmp endLoop
 
-
-
 dotsCheck:
 	cmp al, '.'
 	jne endLoop
-;	mov dot, 1
-
+	mov dl, '*'
 dotsLoop:
-	cmp cx, 1
-	je addStar_l
 	lodsb
 	dec cx
 	cmp al, '.'
 	jne endDots
-	mov dot, 1
-	jmp dotsLoop	
-
-;	cmp dot, 1
-;	jne endLoop
+	mov dl, '-'
+	jmp dotsLoop
 
 endDots:
-
-	cmp dot, 1
-	je addDash
-addStar:
-	mov al, '*'
-	inc stars
-;	stosb
-;	lodsb
-	;jmp endLoop
-	jmp dotsEnd
-
-addStar_l:
-	inc stars
-	mov al, '*'
+	mov [di], dl
+	
+	inc di
+	cmp dl, '*'
+	jne incDashes
+	inc_bcd stars
 	jmp endLoop
-
-addDash:
-	mov al, '-'
-	inc dashes
-;	dec si		
-dotsEnd:
-	stosb
-	dec si
-	lodsb
-
+incDashes:
+	inc_bcd dashes
+;	mov al, dl
 endLoop:
 	stosb
 	loop MainLoop
@@ -298,9 +295,13 @@ endLoop:
 	mov ax, di
 	mov b[1], al
 	
-	add spaces, 30h
-	add dashes, 30h
-	add stars, 30h
+	bswap_w spaces
+	bswap_w stars
+	bswap_w dashes
+
+	add spaces, 3030h
+	add dashes, 3030h
+	add stars, 3030h
 
 jmp MenuLoop
 
