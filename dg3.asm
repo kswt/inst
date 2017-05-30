@@ -70,7 +70,7 @@ next:
 	mov cx, n
 change: ;здесь один цикл, по строкам
 	mov al, res[si][bx]
-	xchg res[si][ds:bp], al
+	xchg res[si][ds:bp], al ;указываем "DS:", так как без этого регистр BP используется для адресации в сегменте стека
 	xchg al, res[si][bx]
 
 	add si, n; переход к следующей строке
